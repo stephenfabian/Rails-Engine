@@ -26,6 +26,26 @@ RSpec.describe 'Items Request' do
 
       expect(item[:attributes][:name]).to be_a(String)
     end
-    
+
+  end
+
+  it 'can get a single item' do
+    @merchant1 = create(:merchant)
+    @merchant2 = create(:merchant)
+    create_list(:item, 3, merchant_id: @merchant1.id)
+    create_list(:item, 3, merchant_id: @merchant2.id)
+
+    id = Item.first.id
+    get "/api/v1/items/#{id}"    
+
+    item = JSON.parse(response.body, symbolize_names: true)
+    expect(response).to be_successful
+
+    expect(item).to be_a(Hash)
+    expect(item[:data]).to have_key(:id)
+    expect(item[:data]).to be_a(Hash)
+    expect(item[:data][:id]).to eq("#{id}")
+    expect(item[:data][:attributes][:name]).to be_a(String)
+    expect(item[:data][:attributes].count).to eq(4)
   end
 end
