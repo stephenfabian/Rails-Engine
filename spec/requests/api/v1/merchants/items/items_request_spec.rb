@@ -48,4 +48,25 @@ RSpec.describe 'Items Request' do
     expect(item[:data][:attributes][:name]).to be_a(String)
     expect(item[:data][:attributes].count).to eq(4)
   end
+
+  it 'can create an item' do
+    @merchant1 = create(:merchant)
+
+    item_params = ({
+                    name: "Super Big Hat",
+                    description: "The coolest hat",
+                    unit_price: 10.99,
+                    merchant_id: @merchant1.id
+                  })
+
+    headers = {"CONTENT_TYPE" => "application/json"}
+    post "/api/v1/items", headers: headers, params: JSON.generate(item: item_params)
+    created_item = Item.last
+
+    expect(response).to be_successful
+    expect(created_item.name).to eq(item_params[:name])
+    expect(created_item.description).to eq("The coolest hat")
+    expect(created_item.unit_price).to eq(10.99)
+    expect(created_item.merchant_id).to eq(created_item[:merchant_id]) 
+  end
 end
