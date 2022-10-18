@@ -8,12 +8,12 @@ RSpec.describe 'Merchants' do
     merchants = JSON.parse(response.body, symbolize_names: true)
 
     expect(response).to be_successful
-
-    expect(merchants.count).to eq(3)
+    expect(merchants[:data].count).to eq(3)
 
     merchants.each do |merchant|
-      expect(merchant[:name]).to be_a(String)
-      expect(merchant[:id]).to be_a(Integer)
+      expect(merchant[1].count).to eq(3)
+      expect(merchant[1].first[:id]).to be_a(String)
+      expect(merchant[1].first[:attributes]).to be_a(Hash)
     end
   end
 
