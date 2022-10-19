@@ -31,4 +31,24 @@ RSpec.describe 'Merchants' do
     expect(merchant[:data][:id]).to eq("#{id}")
     expect(merchant[:data][:attributes][:name]).to be_a(String)
   end
+
+  it 'can find one merchant by search criteria' do
+    create(:merchant, name: "Bob")
+    create(:merchant, name: "Turing")
+    merchant_to_return = create(:merchant, name: "Merchant Bring It")
+    create(:merchant, name: "Billy")
+
+
+    search_params = ({
+                      name: "ring"
+                    })
+    get "/api/v1/merchants/find?name=#{search_params[:name]}"
+                 
+    merchant = JSON.parse(response.body, symbolize_names: true)
+    expect(response).to be_successful
+    expect(merchant[:data][:attributes][:name]).to eq("#{merchant_to_return.name}")
+    expect(merchant[:data][:attributes][:name]).to be_a(String)
+    expect(merchant[:data][:id]).to eq("#{merchant_to_return.id}")
+    expect(merchant[:data]).to be_a(Hash)
+  end
 end

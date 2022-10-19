@@ -72,7 +72,8 @@ RSpec.describe 'Items Request' do
 
   it 'can edit an item' do
     @merchant1 = create(:merchant)
-    id = create(:item).id
+    id = create(:item, merchant_id: @merchant1.id).id
+    # require 'pry'; binding.pry
     previous_name = Item.last.name
     params = ({
                     name: "Tiny Hat"
@@ -87,24 +88,25 @@ RSpec.describe 'Items Request' do
     expect(updated_item[:name]).to_not eq(previous_name)
   end
 
-# ????????????????????????????????????
-  # it 'if merchant id doesnt exist when trying to update item, return status 401' do
-  #   @merchant1 = create(:merchant, id: 5)
-  #   @item1 = create(:item, merchant_id: @merchant1.id)
 
-  #   params = ({
-  #               name: "Tiny Hat",
-  #               merchant_id: 99
-  #             })
-  #   headers = {"CONTENT_TYPE" => "application/json"}
+  it 'if merchant id doesnt exist when trying to update item, return status 401' do
+    @merchant1 = create(:merchant, id: 5)
+    @item1 = create(:item, merchant_id: @merchant1.id)
 
-  #   patch "/api/v1/items/#{@item1.id}", headers: headers, params: JSON.generate({item: params})
-  #   expect{Merchant.find(params[:merchant_id])}.to raise_error(ActiveRecord::RecordNotFound)
-  # end
+    params = ({
+                name: "Tiny Hat",
+                merchant_id: 99
+              })
+    headers = {"CONTENT_TYPE" => "application/json"}
+
+    patch "/api/v1/items/#{@item1.id}", headers: headers, params: JSON.generate({item: params})
+
+    expect(response).to have_http_status(404)
+  end
 
   it 'can destroy an item' do
     @merchant1 = create(:merchant)
-    create_list(:item, 3)
+    create_list(:item, 3, merchant_id: @merchant1.id)
 
     item = Item.last
     delete "/api/v1/items/#{item.id}"
@@ -112,7 +114,43 @@ RSpec.describe 'Items Request' do
     expect{Item.find(item.id)}.to raise_error(ActiveRecord::RecordNotFound)
   end
 
-  it 'can get an items merchant' do
+    it 'if invoice has only one ii, destroy invoice and dependents' do
+      @merchant1 = create(:merchant)
 
-  end
+      @item1 = create(:item, merchant_id: @merchant1.id)
+      @item2 = create(:item, merchant_id: @merchant1.id)
+      @item3 = create(:item, merchant_id: @merchant1.id)
+
+      @customer1 = Customer.create!(first_name: "Stephen", last_name: "Fabian", created_at: "2022-08-27 10:00:00 UTC", updated_at: "2022-08-27 10:00:00 UTC")
+
+      @invoice1 = Invoice.create!(customer_id: @customer1.id, merchant_id: @merchant1.id, status: "shipped")
+      @invoice2 = Invoice.create!(customer_id: @customer1.id, merchant_id: @merchant1.id, status: "shipped")
+
+      @transaction1 = Transaction.create!(invoice_id: @invoice1.id, credit_card_number: 4654405418249632, credit_card_expiration_date: "04/23", result: "success")
+      @transaction2 = Transaction.create!(invoice_id: @invoice2.id, credit_card_number: 4654405418249632, credit_card_expiration_date: "04/23", result: "success")
+      @transaction3 = Transaction.create!(invoice_id: @invoice2.id, credit_card_number: 4654405418249632, credit_card_expiration_date: "04/23", result: "success")
+
+      @invoice_item1 = InvoiceItem.create!(item_id: @item1.id, invoice_id: @invoice1.id, quantity: 8, unit_price: 40)
+      @invoice_item2 = InvoiceItem.create!(item_id: @item2.id, invoice_id: @invoice2.id, quantity: 6, unit_price: 40)
+      @invoice_item3 = InvoiceItem.create!(item_id: @item3.id, invoice_id: @invoice2.id, quantity: 5, unit_price: 40)
+      
+      expect(@item1.invoices).to eq([@invoice1])
+      expect(@invoice1.invoice_items.count).to eq(1)
+      expect(@invoice2.invoice_items.count).to eq(2)
+      
+      delete "/api/v1/items/#{@item1.id}"
+    
+      expect{Item.find(@item1.id)}.to raise_error(ActiveRecord::RecordNotFound)
+      expect{Invoice.find(@invoice1.id)}.to raise_error(ActiveRecord::RecordNotFound)
+      expect{InvoiceItem.find(@invoice_item1.id)}.to raise_error(ActiveRecord::RecordNotFound)
+      expect{Transaction.find(@transaction1.id)}.to raise_error(ActiveRecord::RecordNotFound)
+
+      delete "/api/v1/items/#{@item2.id}"
+
+      expect(Invoice.find(@invoice2.id)).to eq(@invoice2)
+      expect{InvoiceItem.find(@invoice_item2.id)}.to raise_error(ActiveRecord::RecordNotFound)
+      expect(InvoiceItem.find(@invoice_item3.id)).to eq(@invoice_item3)
+      expect(Transaction.find(@transaction2.id)).to eq(@transaction2)
+      
+    end
 end
