@@ -49,7 +49,7 @@ RSpec.describe 'Items Request' do
     expect(item[:data][:attributes].count).to eq(4)
   end
 
-  it 'can create an item' do
+  it 'can create an item' do #may need additional tests on response structure
     @merchant1 = create(:merchant)
 
     item_params = ({
@@ -87,6 +87,7 @@ RSpec.describe 'Items Request' do
     expect(updated_item[:name]).to_not eq(previous_name)
   end
 
+# ????????????????????????????????????
   # it 'if merchant id doesnt exist when trying to update item, return status 401' do
   #   @merchant1 = create(:merchant, id: 5)
   #   @item1 = create(:item, merchant_id: @merchant1.id)
@@ -98,7 +99,20 @@ RSpec.describe 'Items Request' do
   #   headers = {"CONTENT_TYPE" => "application/json"}
 
   #   patch "/api/v1/items/#{@item1.id}", headers: headers, params: JSON.generate({item: params})
-  #   expect(response).to_not be_successful
+  #   expect{Merchant.find(params[:merchant_id])}.to raise_error(ActiveRecord::RecordNotFound)
   # end
 
+  it 'can destroy an item' do
+    @merchant1 = create(:merchant)
+    create_list(:item, 3)
+
+    item = Item.last
+    delete "/api/v1/items/#{item.id}"
+   
+    expect{Item.find(item.id)}.to raise_error(ActiveRecord::RecordNotFound)
+  end
+
+  it 'can get an items merchant' do
+
+  end
 end
