@@ -12,7 +12,7 @@ class Api::V1::ItemsController < ApplicationController
 
   def create
     # require 'pry'; binding.pry
-   render json: Item.create(item_params)
+   render json: ItemSerializer.new(Item.create(item_params)), status: 201
   end
 
   def update
@@ -35,6 +35,11 @@ class Api::V1::ItemsController < ApplicationController
       render json: ItemSerializer.new(Item.update(params[:id], item_params))
     end
     # render json: ItemSerializer.new(item.update(item_params))
+  end
+
+  def destroy
+    item = Item.find(params[:id])
+    render json: ItemSerializer.new(item.destroy)
   end
   private
 
