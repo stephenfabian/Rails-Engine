@@ -86,4 +86,19 @@ RSpec.describe 'Items Request' do
     expect(updated_item[:name]).to eq(params[:name])
     expect(updated_item[:name]).to_not eq(previous_name)
   end
+
+  # it 'if merchant id doesnt exist when trying to update item, return status 401' do
+  #   @merchant1 = create(:merchant, id: 5)
+  #   @item1 = create(:item, merchant_id: @merchant1.id)
+
+  #   params = ({
+  #               name: "Tiny Hat",
+  #               merchant_id: 99
+  #             })
+  #   headers = {"CONTENT_TYPE" => "application/json"}
+
+  #   patch "/api/v1/items/#{@item1.id}", headers: headers, params: JSON.generate({item: params})
+  #   expect(response).to_not be_successful
+  # end
+
 end
