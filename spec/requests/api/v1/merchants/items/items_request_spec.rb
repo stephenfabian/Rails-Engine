@@ -29,6 +29,16 @@ RSpec.describe 'Items Request' do
 
   end
 
+  it 'get all items sad path - returns empty array if there are no items' do
+    get '/api/v1/items'
+
+    items = JSON.parse(response.body, symbolize_names: true)
+
+    expect(items[:data].count).to eq(0)
+    expect(response).to be_successful
+    expect(items[:data]).to eq([])
+  end
+
   it 'can get a single item' do
     @merchant1 = create(:merchant)
     @merchant2 = create(:merchant)
@@ -158,10 +168,10 @@ RSpec.describe 'Items Request' do
       before :each do
         @merchant1 = create(:merchant)
         @merchant2 = create(:merchant)
-        @item1 = create(:item, unit_price: 40.2, merchant_id: @merchant1.id)
-        @item2 = create(:item, unit_price: 40.5, merchant_id: @merchant1.id)
-        @item3 = create(:item, unit_price: 60, merchant_id: @merchant2.id)
-        @item4 = create(:item, unit_price: 20, merchant_id: @merchant2.id)
+        @item1 = create(:item, name: "Titanium Ring", unit_price: 40.2, merchant_id: @merchant1.id)
+        @item2 = create(:item, name: "Turing Item", unit_price: 40.5, merchant_id: @merchant1.id)
+        @item3 = create(:item, name: "Joy Bringer", unit_price: 60, merchant_id: @merchant2.id)
+        @item4 = create(:item, name: "Bike", unit_price: 20, merchant_id: @merchant2.id)
       end
 
     it 'can find all items above a minimum price sent in params' do
@@ -230,13 +240,27 @@ RSpec.describe 'Items Request' do
     end
 
     it 'if both name param and price param are sent, error message is rendered' do
-
     end
 
     it 'can find all items whos name matches keyword search' do
-            # get "/api/v1/items/find_all?max_price=999"
-      # get "/api/v1/items/find_all?name=ring&min_price=50"
-      # get "/api/v1/items/find_all?name=ring"
+
+      get "/api/v1/items/find?name=ring"
+
+      items = JSON.parse(response.body, symbolize_names: true)
+
+      items[:data].each do |item|
+        expect(item).to be_a(Hash)
+        expect(item[:id]).to be_a(String)
+        expect(item[:attributes]).to be_a(Hash)
+      end
+
+      expect(items[:data].count).to eq(3)
+      expect(items[:data].first[:id]).to eq(@item3.id.to_s)
+      expect(items[:data].first[:attributes][:unit_price]).to eq(@item3.unit_price)
+      expect(items[:data].second[:id]).to eq(@item1.id.to_s)
+      expect(items[:data].second[:attributes][:unit_price]).to eq(@item1.unit_price)
+      expect(items[:data].third[:id]).to eq(@item2.id.to_s)
+      expect(items[:data].third[:attributes][:unit_price]).to eq(@item2.unit_price)
     end
   end
 end

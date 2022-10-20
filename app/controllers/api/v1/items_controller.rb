@@ -11,40 +11,8 @@ class Api::V1::ItemsController < ApplicationController
   end
 
   def create
-    # require 'pry'; binding.pry
-   render json: ItemSerializer.new(Item.create(item_params)), status: 201
+    render json: ItemSerializer.new(Item.create(item_params)), status: 201
   end
-
-  # def update
-  #   item = Item.find(params[:id])
-  #   merchant_id = params[:item][:merchant_id]
-
-  #   if merchant_id 
-  #     merchant = Merchant.find(merchant_id)
-  #   else
-  #     merchant = item.merchant
-  #   end
-
-  #   # if params[:item][:merchant_id] && Merchant.exists?(params[:item][:merchant_id]) 
-  #   #   merchant = Merchant.find(params[:item][:merchant_id])
-  #   # elsif Merchant.exists?(params[:item][:merchant_id]) == false
-
-  #   # else
-  #   #   merchant = item.merchant
-
-  #   # end
-
-  #   if !item || !merchant
-  #     render status: 404
-  #     # render json: {data: nil}, status: 404
-  #   end
-    
-  #   item.update(item_params)
-  #   if item.save
-  #     render json: ItemSerializer.new(Item.update(params[:id], item_params))
-  #   end
-  #   # render json: ItemSerializer.new(item.update(item_params))
-  # end
 
   def update
     item = Item.update(params[:id], item_params)  
@@ -60,13 +28,13 @@ class Api::V1::ItemsController < ApplicationController
     item.destroy_inv_having_one_item
     render json: Item.destroy(params[:id])
   end
-  
-  #min price < 0, render 400
-  #max price < 0, render 400
 
   def find_all
     if params[:name] && (params[:min_price] || params[:max_price])
       render status: 400 
+    elsif params[:name] && (params[:min_price] == nil && params[:max_price] == nil) # +
+      item = Item.single_item_search(params[:name])
+      render json: ItemSerializer.new(item)
     elsif (params[:min_price] || params[:max_price]) && (params[:min_price].to_i < 0 || params[:max_price].to_i < 0)
       render json: {error: {}}, status: 400
     elsif params[:min_price] && params[:max_price]
@@ -82,16 +50,19 @@ class Api::V1::ItemsController < ApplicationController
   end
 
   def find
-    item = Item.single_item_search(params[:name])
-
-    if !item == true
-      # render json: (no_item_data)
-    else
+    if params[:name] && (params[:min_price] || params[:max_price])
+      render status: 400 
+    elsif (params[:min_price] || params[:max_price]) && (params[:min_price].to_i < 0 || params[:max_price].to_i < 0)
+      render json: {error: {}}, status: 400
+    elsif params[:name] && (params[:min_price] == nil && params[:max_price] == nil)
+      item = Item.single_item_search(params[:name])
       render json: ItemSerializer.new(item)
+      render json: {error: {}}, status: 400 if !item
     end
   end
 
   private
+  
   def item_params
     params.require(:item).permit(:id, :name, :description, :unit_price, :merchant_id)
   end
