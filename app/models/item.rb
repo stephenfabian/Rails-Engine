@@ -26,4 +26,8 @@ class Item < ApplicationRecord
   def self.search_by_max_and_min_price(min_price, max_price)
     Item.where(unit_price: min_price..max_price)
   end
+
+  def self.single_item_search(keyword)
+    where("name ILIKE ?", "%#{keyword}%").order(:name)
+  end
 end
