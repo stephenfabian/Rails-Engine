@@ -46,4 +46,43 @@ RSpec.describe Item, type: :model do
       expect(Transaction.find(@transaction2.id)).to eq(@transaction2)
     end
   end
+
+  describe 'search by min price' do
+    it 'should return array of items with a price less than or equal to the min price params' do
+      @merchant1 = create(:merchant)
+      @merchant2 = create(:merchant)
+      @item1 = create(:item, unit_price: 40.20, merchant_id: @merchant1.id)
+      @item2 = create(:item, unit_price: 40.50, merchant_id: @merchant1.id)
+      @item3 = create(:item, unit_price: 60, merchant_id: @merchant2.id)
+      @item4 = create(:item, unit_price: 20, merchant_id: @merchant2.id)
+
+      expect(Item.search_by_min_price(40.50)).to eq([@item2, @item3])
+    end
+  end
+
+  describe 'search by max price' do
+    it 'should return array of items with a price greater than or equal to the max price params' do
+      @merchant1 = create(:merchant)
+      @merchant2 = create(:merchant)
+      @item1 = create(:item, unit_price: 40.20, merchant_id: @merchant1.id)
+      @item2 = create(:item, unit_price: 40.50, merchant_id: @merchant1.id)
+      @item3 = create(:item, unit_price: 60, merchant_id: @merchant2.id)
+      @item4 = create(:item, unit_price: 20, merchant_id: @merchant2.id)
+
+      expect(Item.search_by_max_price(40.50)).to eq([@item1, @item2, @item4])
+    end
+  end
+
+  describe 'search by max and min price' do
+    it 'should return combined array of items returned from max and min search methods' do
+      @merchant1 = create(:merchant)
+      @merchant2 = create(:merchant)
+      @item1 = create(:item, unit_price: 40.20, merchant_id: @merchant1.id)
+      @item2 = create(:item, unit_price: 40.50, merchant_id: @merchant1.id)
+      @item3 = create(:item, unit_price: 60, merchant_id: @merchant2.id)
+      @item4 = create(:item, unit_price: 20, merchant_id: @merchant2.id)
+
+      expect(Item.search_by_max_and_min_price(40.20, 60)).to eq([@item1, @item2, @item3])
+    end
+  end
 end

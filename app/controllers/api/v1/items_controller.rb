@@ -59,9 +59,30 @@ class Api::V1::ItemsController < ApplicationController
     item = Item.find(params[:id])
     item.destroy_inv_having_one_item
     render json: ItemSerializer.new(item.destroy)
+    # not utilize a serializer?????
   end
-  private
+  
+  #min price < 0, render 400
+  #max price < 0, render 400
 
+  def find_all
+    if params[:name] && (params[:min_price] || params[:max_price])
+      render status: 400 
+    elsif (params[:min_price] || params[:max_price]) && (params[:min_price].to_i < 0 || params[:max_price].to_i < 0)
+      render status: 400 #need error format (expect(payload).to.have.property('error')?
+    elsif params[:min_price] && params[:max_price]
+      items = Item.search_by_max_and_min_price(params[:min_price], params[:max_price])
+      render json: ItemSerializer.new(items)
+    elsif params[:min_price] && params[:max_price] == nil 
+      items = Item.search_by_min_price(params[:min_price])
+      render json: ItemSerializer.new(items)
+    elsif params[:min_price] == nil && params[:max_price]
+      items = Item.search_by_max_price(params[:max_price])
+      render json: ItemSerializer.new(items)
+    end
+  end
+
+  private
   def item_params
     params.require(:item).permit(:id, :name, :description, :unit_price, :merchant_id)
   end
