@@ -9,7 +9,7 @@ class Item < ApplicationRecord
         Invoice.destroy(invoice.id)
       elsif invoice.invoice_items.count > 1
         invoice_items.each do |invoice_item|
-          InvoiceItem.destroy(invoice_item.id)
+          InvoiceItem.destroy(invoice_item.id) if invoice_item.item_id == self.id
         end
       end
     end

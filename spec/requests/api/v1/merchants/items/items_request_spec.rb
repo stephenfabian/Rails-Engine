@@ -131,10 +131,10 @@ RSpec.describe 'Items Request' do
       @transaction3 = Transaction.create!(invoice_id: @invoice2.id, credit_card_number: 4654405418249632, credit_card_expiration_date: "04/23", result: "success")
 
       @invoice_item1 = InvoiceItem.create!(item_id: @item1.id, invoice_id: @invoice1.id, quantity: 8, unit_price: 40)
-      @invoice_item2 = InvoiceItem.create!(item_id: @item2.id, invoice_id: @invoice2.id, quantity: 6, unit_price: 40)
+      @invoice_item2 = InvoiceItem.create!(item_id: @item1.id, invoice_id: @invoice2.id, quantity: 6, unit_price: 40)
       @invoice_item3 = InvoiceItem.create!(item_id: @item3.id, invoice_id: @invoice2.id, quantity: 5, unit_price: 40)
       
-      expect(@item1.invoices).to eq([@invoice1])
+      expect(@item1.invoices).to eq([@invoice1, @invoice2])
       expect(@invoice1.invoice_items.count).to eq(1)
       expect(@invoice2.invoice_items.count).to eq(2)
       
@@ -142,6 +142,7 @@ RSpec.describe 'Items Request' do
     
       expect{Item.find(@item1.id)}.to raise_error(ActiveRecord::RecordNotFound)
       expect{Invoice.find(@invoice1.id)}.to raise_error(ActiveRecord::RecordNotFound)
+      expect(Invoice.find(@invoice2.id)).to eq(@invoice2)
       expect{InvoiceItem.find(@invoice_item1.id)}.to raise_error(ActiveRecord::RecordNotFound)
       expect{Transaction.find(@transaction1.id)}.to raise_error(ActiveRecord::RecordNotFound)
 
@@ -231,7 +232,7 @@ RSpec.describe 'Items Request' do
     it 'if both name param and price param are sent, error message is rendered' do
 
     end
-    
+
     it 'can find all items whos name matches keyword search' do
             # get "/api/v1/items/find_all?max_price=999"
       # get "/api/v1/items/find_all?name=ring&min_price=50"
