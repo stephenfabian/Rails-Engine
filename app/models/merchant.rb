@@ -4,5 +4,4 @@ class Merchant < ApplicationRecord
   def self.single_merchant_search(keyword)
     where("name ILIKE ?", "%#{keyword}%").order(:name).first
   end
-
 end

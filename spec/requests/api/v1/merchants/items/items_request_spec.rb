@@ -131,10 +131,10 @@ RSpec.describe 'Items Request' do
       @transaction3 = Transaction.create!(invoice_id: @invoice2.id, credit_card_number: 4654405418249632, credit_card_expiration_date: "04/23", result: "success")
 
       @invoice_item1 = InvoiceItem.create!(item_id: @item1.id, invoice_id: @invoice1.id, quantity: 8, unit_price: 40)
-      @invoice_item2 = InvoiceItem.create!(item_id: @item2.id, invoice_id: @invoice2.id, quantity: 6, unit_price: 40)
+      @invoice_item2 = InvoiceItem.create!(item_id: @item1.id, invoice_id: @invoice2.id, quantity: 6, unit_price: 40)
       @invoice_item3 = InvoiceItem.create!(item_id: @item3.id, invoice_id: @invoice2.id, quantity: 5, unit_price: 40)
       
-      expect(@item1.invoices).to eq([@invoice1])
+      expect(@item1.invoices).to eq([@invoice1, @invoice2])
       expect(@invoice1.invoice_items.count).to eq(1)
       expect(@invoice2.invoice_items.count).to eq(2)
       
@@ -142,6 +142,7 @@ RSpec.describe 'Items Request' do
     
       expect{Item.find(@item1.id)}.to raise_error(ActiveRecord::RecordNotFound)
       expect{Invoice.find(@invoice1.id)}.to raise_error(ActiveRecord::RecordNotFound)
+      expect(Invoice.find(@invoice2.id)).to eq(@invoice2)
       expect{InvoiceItem.find(@invoice_item1.id)}.to raise_error(ActiveRecord::RecordNotFound)
       expect{Transaction.find(@transaction1.id)}.to raise_error(ActiveRecord::RecordNotFound)
 
@@ -151,6 +152,91 @@ RSpec.describe 'Items Request' do
       expect{InvoiceItem.find(@invoice_item2.id)}.to raise_error(ActiveRecord::RecordNotFound)
       expect(InvoiceItem.find(@invoice_item3.id)).to eq(@invoice_item3)
       expect(Transaction.find(@transaction2.id)).to eq(@transaction2)
-      
     end
+    
+    describe 'Part 2 - All Items Search' do
+      before :each do
+        @merchant1 = create(:merchant)
+        @merchant2 = create(:merchant)
+        @item1 = create(:item, unit_price: 40.2, merchant_id: @merchant1.id)
+        @item2 = create(:item, unit_price: 40.5, merchant_id: @merchant1.id)
+        @item3 = create(:item, unit_price: 60, merchant_id: @merchant2.id)
+        @item4 = create(:item, unit_price: 20, merchant_id: @merchant2.id)
+      end
+
+    it 'can find all items above a minimum price sent in params' do
+
+      get "/api/v1/items/find_all?min_price=40.5"
+
+      items = JSON.parse(response.body, symbolize_names: true)
+
+      expect(items).to be_a(Hash)
+      expect(items[:data]).to be_a(Array)
+      expect(items[:data].count).to eq(2)
+
+      items[:data].each do |item|
+        expect(item).to be_a(Hash)
+        expect(item[:id]).to be_a(String)
+        expect(item[:attributes]).to be_a(Hash)
+      end
+
+      expect(items[:data].first[:id]).to eq(@item2.id.to_s)
+      expect(items[:data].first[:attributes][:unit_price]).to eq(@item2.unit_price)
+      expect(items[:data].second[:id]).to eq(@item3.id.to_s)
+      expect(items[:data].second[:attributes][:unit_price]).to eq(@item3.unit_price)
+    end
+
+    it 'can find all items below a maximum price sent in params' do
+
+      get "/api/v1/items/find_all?max_price=40.2"
+
+      items = JSON.parse(response.body, symbolize_names: true)
+
+      expect(items).to be_a(Hash)
+      expect(items[:data]).to be_a(Array)
+      expect(items[:data].count).to eq(2)
+
+      items[:data].each do |item|
+        expect(item).to be_a(Hash)
+        expect(item[:id]).to be_a(String)
+        expect(item[:attributes]).to be_a(Hash)
+      end
+
+      expect(items[:data].first[:id]).to eq(@item1.id.to_s)
+      expect(items[:data].first[:attributes][:unit_price]).to eq(@item1.unit_price)
+      expect(items[:data].second[:id]).to eq(@item4.id.to_s)
+      expect(items[:data].second[:attributes][:unit_price]).to eq(@item4.unit_price)
+    end
+
+    it 'can find items within a range of min price and max price' do
+      get "/api/v1/items/find_all?max_price=60&min_price=40.5"
+      
+      items = JSON.parse(response.body, symbolize_names: true)
+
+      expect(items).to be_a(Hash)
+      expect(items[:data]).to be_a(Array)
+      expect(items[:data].count).to eq(2)
+
+      items[:data].each do |item|
+        expect(item).to be_a(Hash)
+        expect(item[:id]).to be_a(String)
+        expect(item[:attributes]).to be_a(Hash)
+      end
+
+      expect(items[:data].first[:id]).to eq(@item2.id.to_s)
+      expect(items[:data].first[:attributes][:unit_price]).to eq(@item2.unit_price)
+      expect(items[:data].second[:id]).to eq(@item3.id.to_s)
+      expect(items[:data].second[:attributes][:unit_price]).to eq(@item3.unit_price)
+    end
+
+    it 'if both name param and price param are sent, error message is rendered' do
+
+    end
+
+    it 'can find all items whos name matches keyword search' do
+            # get "/api/v1/items/find_all?max_price=999"
+      # get "/api/v1/items/find_all?name=ring&min_price=50"
+      # get "/api/v1/items/find_all?name=ring"
+    end
+  end
 end
