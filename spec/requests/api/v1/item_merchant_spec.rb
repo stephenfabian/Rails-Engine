@@ -12,9 +12,15 @@ RSpec.describe "ItemMerchants", type: :request do
     merchant = JSON.parse(response.body, symbolize_names: true)
     
     expect(response).to be_successful
-    # require 'pry'; binding.pry
+
+    expect(merchant).to be_a(Hash)
     expect(merchant[:data]).to have_key(:id)
     expect(merchant[:data][:id]).to eq("#{@merchant1.id}")
-    expect(merchant[:data][:attributes][:name]).to be_a(String)
+    expect(merchant[:data]).to be_a(Hash)
+    expect(merchant[:data]).to have_key(:type)
+    expect(merchant[:data][:type]).to be_a(String)
+    attributes = merchant[:data][:attributes]
+    expect(attributes).to have_key(:name)
+    expect(attributes[:name]).to be_a(String)
   end
 end
