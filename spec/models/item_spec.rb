@@ -7,6 +7,13 @@ RSpec.describe Item, type: :model do
     it { should have_many(:invoices).through(:invoice_items) }
   end
 
+  describe 'validations' do
+    it { should validate_presence_of(:name) }
+    it { should validate_presence_of(:description) }
+    it { should validate_presence_of(:unit_price) }
+    it { should validate_presence_of(:merchant_id) }
+  end
+
   describe 'destroy_inv_having_one_item' do
     it 'if invoice has only one ii, destroy invoice and dependents, if more than one ii, dont destroy invoice' do
       @merchant1 = create(:merchant)
@@ -83,6 +90,18 @@ RSpec.describe Item, type: :model do
       @item4 = create(:item, unit_price: 20, merchant_id: @merchant2.id)
 
       expect(Item.search_by_max_and_min_price(40.20, 60)).to eq([@item1, @item2, @item3])
+    end
+  end
+
+  describe 'all_items_search' do
+    it 'should return all items by keyword search' do
+      merchant = create(:merchant)
+      item1 = create(:item, name: "Bob", merchant_id: merchant.id)
+      item2 = create(:item, name: "Turing", merchant_id: merchant.id)
+      item3 = create(:item, name: "Merchant Bring It", merchant_id: merchant.id)
+      item4 = create(:item, name: "Billy", merchant_id: merchant.id)
+
+      expect(Item.all_items_search("ring")).to eq([item3, item2])
     end
   end
 end

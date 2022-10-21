@@ -1,4 +1,6 @@
 class Item < ApplicationRecord
+  validates_presence_of :name, :description, :unit_price, :merchant_id
+
   belongs_to :merchant
   has_many :invoice_items
   has_many :invoices, through: :invoice_items
@@ -27,7 +29,7 @@ class Item < ApplicationRecord
     Item.where(unit_price: min_price..max_price)
   end
 
-  def self.single_item_search(keyword)
+  def self.all_items_search(keyword)
     where("name ILIKE ?", "%#{keyword}%").order(:name)
   end
 end

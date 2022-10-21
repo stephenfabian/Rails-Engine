@@ -8,19 +8,28 @@ RSpec.describe 'Merchant Items Request' do
 
     get api_v1_merchant_items_path(@merchant1)
 
-    merchant_items = JSON.parse(response.body, symbolize_names: true)
+    items = JSON.parse(response.body, symbolize_names: true)
 
     expect(response).to be_successful
-    expect(@merchant1.items.count).to eq(3)
+    expect(items).to have_key(:data)
+    expect(items[:data].count).to eq(3)
 
-    merchant_items.each do |item|
-      expect(item[1][0][:id]).to be_a(String)
-      expect(item[1][0][:attributes].count).to eq(4)
-      expect(item[1][0][:attributes]).to have_key(:name)
-      expect(item[1][0][:attributes]).to have_key(:description)
-      expect(item[1][0][:attributes]).to have_key(:unit_price)
-      expect(item[1][0][:attributes]).to have_key(:merchant_id)
-      expect(item[1][0][:attributes][:name]).to be_a(String)
+    items[:data].each do |item|
+      expect(item).to be_a(Hash)
+      expect(item).to have_key(:id)
+      expect(item[:id]).to be_a(String)
+      expect(item).to have_key(:type)
+      expect(item[:type]).to be_a(String)
+      expect(item).to have_key(:attributes)
+      attributes = item[:attributes]
+      expect(attributes).to be_a(Hash)
+      expect(attributes).to have_key(:name)
+      expect(attributes[:name]).to be_a(String)
+      expect(attributes).to have_key(:unit_price)
+      expect(attributes[:unit_price]).to be_a(Float)
+      expect(attributes).to have_key(:merchant_id)
+      expect(attributes[:merchant_id]).to be_a(Integer)
+      expect(attributes[:merchant_id]).to eq(@merchant1.id)
     end
   end
 end

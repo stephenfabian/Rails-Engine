@@ -6,12 +6,21 @@ class Api::V1::ItemsController < ApplicationController
   end
 
   def show
-    item = Item.find(params[:id])
-    render json: ItemSerializer.new(item)
+    if Item.exists?(params[:id]) == false
+      render json: {"data": {}}, status: 404 
+    else
+      item = Item.find(params[:id])
+      render json: ItemSerializer.new(item)
+    end
   end
 
   def create
-    render json: ItemSerializer.new(Item.create(item_params)), status: 201
+    item = Item.new(item_params)
+    if item.save
+      render json: ItemSerializer.new(item), status: 201
+    else
+      render json: {"data": {}}, status: 400
+    end
   end
 
   def update
@@ -19,21 +28,25 @@ class Api::V1::ItemsController < ApplicationController
     if item.save
       render json: ItemSerializer.new(item)
     else
-      render status: 404
+      render json: {"data": {}}, status: 404
     end
   end
 
   def destroy
-    item = Item.find(params[:id])
-    item.destroy_inv_having_one_item
-    render json: Item.destroy(params[:id])
+    if Item.exists?(params[:id]) 
+      item = Item.find(params[:id])
+      item.destroy_inv_having_one_item
+      render json: Item.destroy(params[:id])
+    else
+      render json: {"data": {}}, status: 404
+    end
   end
 
   def find_all
     if params[:name] && (params[:min_price] || params[:max_price])
       render status: 400 
     elsif params[:name] && (params[:min_price] == nil && params[:max_price] == nil) # +
-      item = Item.single_item_search(params[:name])
+      item = Item.all_items_search(params[:name])
       render json: ItemSerializer.new(item)
     elsif (params[:min_price] || params[:max_price]) && (params[:min_price].to_i < 0 || params[:max_price].to_i < 0)
       render json: {error: {}}, status: 400
