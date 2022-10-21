@@ -52,7 +52,6 @@ RSpec.describe 'Items Request' do
 
     item = JSON.parse(response.body, symbolize_names: true)
     expect(response).to be_successful
-
     expect(item).to be_a(Hash)
     expect(item[:data]).to have_key(:id)
     expect(item[:data][:id]).to eq("#{id}")
@@ -220,7 +219,6 @@ RSpec.describe 'Items Request' do
     end
 
     it 'can find all items above a minimum price' do
-
       get "/api/v1/items/find_all?min_price=40.5"
 
       items = JSON.parse(response.body, symbolize_names: true)
@@ -242,7 +240,6 @@ RSpec.describe 'Items Request' do
     end
 
     it 'find all items below a maximum price' do
-
       get "/api/v1/items/find_all?max_price=40.2"
 
       items = JSON.parse(response.body, symbolize_names: true)
@@ -296,6 +293,7 @@ RSpec.describe 'Items Request' do
       expect(response).to have_http_status(400)
     end
 
+
     it 'find all items by name' do
       get "/api/v1/items/find?name=ring"
 
@@ -316,4 +314,16 @@ RSpec.describe 'Items Request' do
       expect(items[:data].third[:attributes][:unit_price]).to eq(@item2.unit_price)
     end
   end
+
+    it 'find all items edge case (find endpoint) - if min or max price is less than 0, return status 400' do
+      get "/api/v1/items/find?min_price=-10"
+
+      expect(response).to have_http_status(400)
+    end
+
+    it 'find all items edge case (find all endpoint) - if min or max price is less than 0, return status 400' do
+      get "/api/v1/items/find_all?min_price=-10"
+
+      expect(response).to have_http_status(400)
+    end
 end

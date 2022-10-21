@@ -45,7 +45,7 @@ class Api::V1::ItemsController < ApplicationController
   def find_all
     if params[:name] && (params[:min_price] || params[:max_price])
       render status: 400 
-    elsif params[:name] && (params[:min_price] == nil && params[:max_price] == nil) # +
+    elsif params[:name] && (params[:min_price] == nil && params[:max_price] == nil) 
       item = Item.all_items_search(params[:name])
       render json: ItemSerializer.new(item)
     elsif (params[:min_price] || params[:max_price]) && (params[:min_price].to_i < 0 || params[:max_price].to_i < 0)
@@ -68,7 +68,7 @@ class Api::V1::ItemsController < ApplicationController
     elsif (params[:min_price] || params[:max_price]) && (params[:min_price].to_i < 0 || params[:max_price].to_i < 0)
       render json: {error: {}}, status: 400
     elsif params[:name] && (params[:min_price] == nil && params[:max_price] == nil)
-      item = Item.single_item_search(params[:name])
+      item = Item.all_items_search(params[:name])
       render json: ItemSerializer.new(item)
       render json: {error: {}}, status: 400 if !item
     end
