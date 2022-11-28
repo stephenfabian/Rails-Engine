@@ -33,13 +33,11 @@ group :development, :test do
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
   gem 'rspec-rails'
   gem 'shoulda-matchers'
-  gem 'capybara'
   gem 'simplecov'
   gem 'factory_bot_rails'
   gem 'faker'
   gem 'pry'
   gem 'jsonapi-serializer'
-
 end
 
 group :development do
