@@ -1,5 +1,5 @@
 ## About
-This project exposes data that powers an E-Commerce Application, and is designed according to a service-oriented architecture.  This API exposes data related to merchants, items, and items associated to merchants.  The front and back ends of this application are separate and communicate via APIs. 
+This project exposes data that powers an E-Commerce Application, and is designed according to a service-oriented architecture.  This API exposes data related to merchants, items, and items associated to merchants.  The front and back-end of this application are separate and communicate via APIs. 
 
 Link to the FE application that consumes this API [here](https://github.com/stephenfabian/rails_engine_fe)
 
@@ -40,9 +40,7 @@ Visit the [front-end application](https://github.com/stephenfabian/rails_engine_
 
 ```
 get http://localhost:3000/api/v1/merchants
-```
-*Will have more than 3 Merchants*
-```
+
 {
     "data": [
         {
@@ -85,9 +83,7 @@ http://localhost:3000/api/v1/merchants/42
 ```
 ```
 http://localhost:3000/api/v1/merchants/42/items
-```
-*There will be more Items for this Merchant :id*
-```
+
 {
     "data": [
         {
@@ -140,9 +136,7 @@ http://localhost:3000/api/v1/merchants/find?name=iLl
 ```
 ```
 http://localhost:3000/api/v1/merchants/find_all?name=ILL
-```
-*Will have more than 3 Merchants*
-```
+
 {
     "data": [
         {
@@ -342,24 +336,6 @@ http://localhost:3000/api/v1/items/find?name=hArU
             "description": "Fuga et aut libero veniam tenetur. Ex eligendi modi libero aut numquam at. Velit dolores non ut cupiditate aut consequatur. Maiores quas vel qui aut et voluptatum. Qui consequatur illo.",
             "unit_price": 841.97,
             "merchant_id": 55
-        }
-    }
-}
-```
-```
-http://localhost:3000/api/v1/items/find?min_price=50
-```
-*You can also do ?max_price={number} or chain them with ?min_price={number}&max_price={number}*
-```
-{
-    "data": {
-        "id": "2352",
-        "type": "item",
-        "attributes": {
-            "name": "Item A Error",
-            "description": "Exercitationem rerum porro illo quam molestiae fugiat. Est sit consequatur magnam qui. Officia fugit corporis aliquam enim consectetur.",
-            "unit_price": 285.96,
-            "merchant_id": 97
         }
     }
 }
